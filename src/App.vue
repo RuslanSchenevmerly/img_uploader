@@ -1,27 +1,178 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <div class="container">
+      <div class="card">
+        <h1>Upload image</h1>
+        <input accept="image/*" @change="inputChanged" multiple type="file" style="display: none" ref="fileInput">
+
+        <button @click="$refs.fileInput.click()" class="btn">Open...</button>
+        <button v-if="this.files.length > 0" @click="onUpload" class="btn primary">Upload...</button>
+
+        <div class="preview">
+          <PreviewImg
+              v-on:remove-file="removeFile"
+              v-for="file of files"
+              v-bind:file="file"
+          />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import PreviewImg from "./components/PreviewImg";
+import firebase from "firebase";
+import 'firebase/storage'
 
 export default {
-  name: 'App',
+  name: "App",
+  data() {
+    return {
+      files: []
+    }
+  },
+  methods: {
+    inputChanged(event) {
+      if (!event.target.files.length) {
+        return
+      }
+
+      this.files = [...event.target.files]
+
+      this.files.forEach(file => {
+        if (!file.type.match('image')) {
+          alert('You are trying to upload not image file')
+          this.files.clear()
+          return
+        }
+
+        file.src = URL.createObjectURL(file)
+      })
+    },
+    onUpload() {
+      const storage = firebase.storage()
+      const blocks = document.querySelectorAll('.preview-info')
+      document.querySelectorAll('.preview-remove').forEach(e => e.remove())
+
+      blocks.forEach((block, index) => {
+        const file = this.files[index]
+        const ref = storage.ref(`images/${file.name}`);
+        const task = ref.put(file)
+
+        task.on(`state_changed`, snapshot => {
+              const percentage = `${Math.floor((snapshot.bytesTransferred / snapshot.totalBytes) * 100)}%`
+
+              block.style.bottom = '4px';
+              block.innerHTML = '<div class="preview-info-progress"></div>'
+
+              const previewProgressBlock = block.querySelector('.preview-info-progress')
+              previewProgressBlock.textContent = percentage
+              previewProgressBlock.style.width = percentage
+            },
+            error => {
+              console.log(error.message)
+            },
+            () => {
+              this.uploadValue = 100;
+              task.snapshot.ref.getDownloadURL().then((url) => {
+                console.log(url)
+              })
+            }
+        )
+      })
+    },
+    removeFile(name) {
+      this.files = this.files.filter(file => file.name !== name)
+
+      // const block = document.querySelector(`[data-name="${name}"]`).closest('.preview-img')
+      // block.classList.add('removing')
+      // setTimeout(() => block.remove(), 300)
+    }
+  },
   components: {
-    HelloWorld
-  }
-}
+    PreviewImg
+  },
+};
 </script>
 
 <style>
+body {
+  background: lightsteelblue;
+}
+
+.container {
+  padding-top: 5rem;
+  width: 820px;
+  margin: 0 auto;
+}
+
+.card {
+  border-radius: 25px;
+  background-color: white;
+  text-align: center;
+  padding: 1rem;
+  box-shadow: 2px 3px 10px rgba(0, 0, 0, .2);
+}
+
+.preview {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0.5rem;
+}
+
+.preview-info-progress {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: #42b983;
+  text-align: center;
+  transition: width .22s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-img.removing {
+  transform: scale(0);
+  transition: transform .3s;
+}
+
+.btn {
+  color: #42b983;
+  position: relative;
+  border-radius: 99px;
+  border: 1px solid #42b983;
+  text-decoration: none;
+  text-transform: uppercase;
+  padding: 0.5rem 1.5rem;
+  font-weight: 700;
+  outline: none;
+  background: #fff;
+  transition: all 0.22s;
+  cursor: pointer;
+  margin-right: 1rem;
+}
+
+.btn.primary {
+  background: #42b983;
+  color: #fff
+}
+
+.btn:active {
+  box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+.btn:hover {
+  cursor: pointer;
+  opacity: 0.8;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
   margin-top: 60px;
 }
