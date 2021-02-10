@@ -1,27 +1,23 @@
 <template>
-  <div id="app">
-    <div class="container">
-      <div class="card">
-        <h1>Upload image</h1>
-        <input accept="image/*" @change="inputChanged" multiple type="file" style="display: none" ref="fileInput">
+  <div>
+    <h1>Upload image</h1>
+    <input accept="image/*" @change="inputChanged" multiple type="file" style="display: none" ref="fileInput">
 
-        <button @click="$refs.fileInput.click()" class="btn">Open...</button>
-        <button v-if="this.files.length > 0" @click="onUpload" class="btn primary">Upload...</button>
+    <button @click="$refs.fileInput.click()" class="btn">Open...</button>
+    <button v-if="this.files.length > 0" @click="onUpload" class="btn primary">Upload...</button>
 
-        <div class="preview">
-          <PreviewImg
-              v-on:remove-file="removeFile"
-              v-for="file of files"
-              v-bind:file="file"
-          />
-        </div>
-      </div>
+    <div class="preview">
+      <PreviewImg
+          v-on:remove-file="removeFile"
+          v-for="file of files"
+          v-bind:file="file"
+      />
     </div>
   </div>
 </template>
 
 <script>
-import PreviewImg from "./components/PreviewImg";
+import PreviewImg from "@/components/upload/PreviewImg";
 import firebase from "firebase";
 import 'firebase/storage'
 
@@ -64,7 +60,7 @@ export default {
               const percentage = `${Math.floor((snapshot.bytesTransferred / snapshot.totalBytes) * 100)}%`
 
               block.style.bottom = '4px';
-              block.innerHTML = '<div class="preview-info-progress"></div>'
+              block.innerHTML = `<div class="preview-info-progress"></div>`
 
               const previewProgressBlock = block.querySelector('.preview-info-progress')
               previewProgressBlock.textContent = percentage
@@ -84,10 +80,6 @@ export default {
     },
     removeFile(name) {
       this.files = this.files.filter(file => file.name !== name)
-
-      // const block = document.querySelector(`[data-name="${name}"]`).closest('.preview-img')
-      // block.classList.add('removing')
-      // setTimeout(() => block.remove(), 300)
     }
   },
   components: {
@@ -96,47 +88,11 @@ export default {
 };
 </script>
 
-<style>
-body {
-  background: lightsteelblue;
-}
-
-.container {
-  padding-top: 5rem;
-  width: 820px;
-  margin: 0 auto;
-}
-
-.card {
-  border-radius: 25px;
-  background-color: white;
-  text-align: center;
-  padding: 1rem;
-  box-shadow: 2px 3px 10px rgba(0, 0, 0, .2);
-}
-
+<style scoped>
 .preview {
   display: flex;
   flex-wrap: wrap;
   padding: 0.5rem;
-}
-
-.preview-info-progress {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  background: #42b983;
-  text-align: center;
-  transition: width .22s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.preview-img.removing {
-  transform: scale(0);
-  transition: transform .3s;
 }
 
 .btn {
@@ -167,13 +123,5 @@ body {
 .btn:hover {
   cursor: pointer;
   opacity: 0.8;
-}
-
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
-  margin-top: 60px;
 }
 </style>

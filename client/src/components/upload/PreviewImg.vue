@@ -28,7 +28,7 @@ export default {
         return '0 Byte'
       }
 
-      const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)))
+      const i = Math.floor(Math.log(bytes) / Math.log(1024))
       return Math.round(bytes / Math.pow(1024, i)) + ' ' + sizes[i]
     }
   },
@@ -93,5 +93,17 @@ export default {
   transition: bottom .22s;
 }
 
+.preview-info-progress {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: #42b983;
+  text-align: center;
+  transition: width .22s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 </style>
